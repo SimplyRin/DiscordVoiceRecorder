@@ -12,5 +12,5 @@ Jar ファイルの実行している同じディレクトリに `ffmpeg.exe` �
 | !quit | 録音停止 |
 
 # Download
-- [DiscordVoiceRecorder-1.0-jar-with-dependencies.jar
-](https://github.com/SimplyRin/DiscordVoiceRecorder/releases/download/1.0/DiscordVoiceRecorder-1.0-jar-with-dependencies.jar)
+- [DiscordVoiceRecorder-1.1-jar-with-dependencies.jar
+](https://github.com/SimplyRin/DiscordVoiceRecorder/releases/download/1.1/DiscordVoiceRecorder-1.1-jar-with-dependencies.jar)

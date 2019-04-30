@@ -2,8 +2,10 @@ package net.simplyrin.discordvcrec.listeners;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -84,7 +86,7 @@ public class MessageListener extends ListenerAdapter {
 				}
 
 				if (voiceChannel == null) {
-					channel.sendMessage("You must be in a voice channel!").complete();
+					channel.sendMessage("あなたはボイスチャンネルに参加している必要があります！").complete();
 					return;
 				}
 
@@ -96,9 +98,9 @@ public class MessageListener extends ListenerAdapter {
 
 				this.instance.getTimeManager().getManager(guild.getId() + ":" + channel.getId()).joined();
 
-				channel.sendMessage("Starting voice recording...").complete();
+				channel.sendMessage("ボイスチャンネルの録音を開始します...。").complete();
 
-				System.out.println("Joined " + guild.getName() + "'s " + voiceChannel.getName() + " voice channel.");
+				System.out.println("サーバー: " + guild.getName() + ", チャンネル: " + voiceChannel.getName() + " に参加しました。");
 				return;
 			}
 
@@ -119,7 +121,8 @@ public class MessageListener extends ListenerAdapter {
 				File guildFolder = new File(this.instance.getRecordFolder(), id);
 				guildFolder.mkdir();
 
-				File file = new File(guildFolder, this.instance.getTimeStamp() + ".wav");
+				String timeStamp = this.instance.getTimeStamp();
+				File file = new File(guildFolder, timeStamp + ".wav");
 				if (!file.exists()) {
 					try {
 						file.createNewFile();
@@ -127,7 +130,7 @@ public class MessageListener extends ListenerAdapter {
 					}
 				}
 
-				System.out.println("Byte site: " + _bytes.length);
+				System.out.println("Byte size: " + _bytes.length);
 
 				try {
 					ByteArrayInputStream inputStream = new ByteArrayInputStream(_bytes);
@@ -143,8 +146,34 @@ public class MessageListener extends ListenerAdapter {
 
 				audioManager.closeAudioConnection();
 
+				if (this.instance.isFFMpegExists()) {
+					System.out.println("録音したファイルを ffmpeg.exe を使用して MP3 に変換しています...");
+
+					File mp3 = new File(guildFolder, timeStamp + ".mp3");
+
+					ProcessBuilder processBuilder = new ProcessBuilder("ffmpeg.exe",
+							"-i",
+							"\"" + file.getPath() + "\"",
+							"\"" + mp3.getPath() + "\"");
+
+					Process process = null;
+					try {
+						process = processBuilder.start();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+					Scanner scanner = new Scanner(process.getInputStream());
+					while (scanner.hasNext()) {
+						System.out.println("ffmpeg.exe: " + scanner.nextLine());
+					}
+					scanner.close();
+
+					file.delete();
+				}
+
 				TimeManager timeManager = this.instance.getTimeManager().getManager(guild.getId() + ":" + channel.getId());
-				channel.sendMessage("Audio record has ended!\nTime: " + timeManager.getCurrentTime()).complete();
+				channel.sendMessage("録音が終了しました。\n録音時間: " + timeManager.getCurrentTime()).complete();
 				timeManager.close();
 				return;
 			}

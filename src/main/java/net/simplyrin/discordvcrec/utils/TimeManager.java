@@ -111,23 +111,23 @@ public class TimeManager {
 		int second = result[5];
 
 		if (year > 0) {
-			uptime += year + "y";
+			uptime += year + "年";
 		}
 		if (month > 0) {
-			uptime += month + "m";
+			uptime += month + "月";
 		}
 		if (day > 0) {
-			uptime += day + "d ";
+			uptime += day + "日 ";
 		}
 
 		if (hour > 0) {
-			uptime += hour + "h";
+			uptime += hour + "時";
 		}
 		if (minute > 0) {
-			uptime += minute + "m";
+			uptime += minute + "分";
 		}
 		if (second > 0) {
-			uptime += second + "s";
+			uptime += second + "秒";
 		}
 
 		return uptime;

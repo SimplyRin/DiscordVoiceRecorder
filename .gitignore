@@ -25,3 +25,4 @@ libs
 target
 config.yml
 records
+*.exe

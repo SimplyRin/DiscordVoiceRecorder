@@ -58,7 +58,7 @@ public class Main {
 	public void run() {
 		new RinStream();
 
-		System.out.println("Loading files...");
+		System.out.println("読み込み中...");
 
 		File file = new File("config.yml");
 		if (!file.exists()) {
@@ -98,7 +98,16 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		System.out.println("Loaded!");
+		System.out.println("読み込み完了！");
+
+		if (!this.isFFMpegExists()) {
+			System.out.println("ffmpeg.exe が見つかりませんでした。同じ実行ディレクトリに ffmpeg.exe をダウンロードして配置してください。");
+			System.out.println("ffmpeg.exe ダウンロード: http://ffmpeg.org/download.html");
+		}
+	}
+
+	public boolean isFFMpegExists() {
+		return new File("ffmpeg.exe").exists();
 	}
 
 	public String getTimeStamp() {

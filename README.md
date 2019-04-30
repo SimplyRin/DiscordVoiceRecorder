@@ -3,7 +3,7 @@ Discord での通話を `wav` ファイルに録音する `Bot`
 
 録音ファイルは `records/serverId/yyyy-MM-dd HH-mm-ss.wav` 形式で保存されます。
 
-Jar ファイルの実行している同じディレクトリに `ffmpeg.exe` を置くと、自動的に `wav` ファイルを `mp3` に変換されます。
+Jar ファイルの実行している同じディレクトリに `ffmpeg.exe` を置くと、自動的に `wav` ファイルを `mp3` に変換してくれます。
 
 # Commands
 | Command | Description |

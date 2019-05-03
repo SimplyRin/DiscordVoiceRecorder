@@ -189,16 +189,15 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 		command.add("concat=n=" + files.length + ":v=0:a=1");
 		command.add("\"" + outputMP3.getPath() + "\"");
 
-		ProcessBuilder processBuilder = new ProcessBuilder(command);
+		// ProcessBuilder processBuilder = new ProcessBuilder(command);
 
 		if (this.instance.getConfig().getBoolean("PrintFFMpegLog")) {
 			System.out.println("コマンド: " + rawCommand);
-			System.out.println("コマンド: " + command.toString());
+			// System.out.println("コマンド: " + command.toString());
 		}
 
 		String uniqueId = UUID.randomUUID().toString().split("-")[0];
-
-		File batFile = new File(uniqueId + ".bat");
+		File batFile = new File(this.instance.getBatFolder(), uniqueId + ".bat");
 		if (!batFile.exists()) {
 			try {
 				batFile.createNewFile();
@@ -209,7 +208,7 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 
 		FileWriter fileWriter = null;
 		try {
-			fileWriter = new FileWriter(uniqueId + ".bat");
+			fileWriter = new FileWriter(batFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -217,9 +216,10 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 		printWriter.println("@echo off");
 		printWriter.println(rawCommand);
 		printWriter.println("pause");
+		printWriter.println("exit");
 		printWriter.close();
 
-		String runtime = "cmd.exe /c start " + uniqueId + ".bat";
+		String runtime = "cmd.exe /c start " + batFile.getPath();
 		try {
 			Runtime.getRuntime().exec(runtime);
 		} catch (IOException e) {

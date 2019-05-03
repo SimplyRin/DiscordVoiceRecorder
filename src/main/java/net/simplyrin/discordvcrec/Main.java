@@ -53,6 +53,8 @@ public class Main {
 	private File recordFolder;
 	@Getter
 	private File cacheFolder;
+	@Getter
+	private File batFolder;
 
 	@Getter
 	private TimeManager timeManager;
@@ -83,6 +85,10 @@ public class Main {
 		this.cacheFolder = new File("caches");
 		this.removeFolder(this.cacheFolder);
 		this.cacheFolder.mkdir();
+
+		this.batFolder = new File("bats");
+		this.removeFolder(this.batFolder);
+		this.batFolder.mkdir();
 
 		this.timeManager = new TimeManager(this);
 

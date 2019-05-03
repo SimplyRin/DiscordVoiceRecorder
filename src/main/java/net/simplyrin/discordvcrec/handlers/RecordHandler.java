@@ -1,10 +1,14 @@
 package net.simplyrin.discordvcrec.handlers;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +96,7 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 
 		// 1 min
 		// 3840 (20ms) * 50 (= 1s) * 60 (= 1m) => 11520000
+		//                         * 10 (= 10s) => 1920000
 		if (this.bytes.size() >= 11520000) {
 			List<Byte> copiped = new ArrayList<>();
 			copiped.addAll(this.bytes);
@@ -153,12 +158,19 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 		File cacheFolder = this.cacheFolder;
 		File[] files = cacheFolder.listFiles();
 
-		// System.out.println("Files: " + Arrays.asList(files).toString());
+		if (this.instance.getConfig().getBoolean("PrintFFMpegLog")) {
+			System.out.println("サーバー: " + this.guild.getName() + " (" + this.guild.getId() + ")");
+			System.out.println("処理ファイル一覧 (" + files.length + "): " + Arrays.asList(files).toString());
+		}
 
+		String rawCommand = "ffmpeg ";
 		List<String> command = new ArrayList<>();
 		command.add("ffmpeg");
 
 		for (File file : files) {
+			rawCommand += "-i ";
+			rawCommand += "\"" + file.getPath() + "\" ";
+
 			command.add("-i");
 			command.add("\"" + file.getPath() + "\"");
 		}
@@ -169,36 +181,74 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 		String timeStamp = this.instance.getTimeStamp();
 		File outputMP3 = new File(guildFolder, timeStamp + ".mp3");
 
+		rawCommand += "-filter_complex ";
+		rawCommand += "\"concat=n=" + files.length + ":v=0:a=1\" ";
+		rawCommand += "\"" + outputMP3.getPath() + "\"";
+
 		command.add("-filter_complex");
-		command.add("\"concat=n=" + files.length + ":v=0:a=1\"");
+		command.add("concat=n=" + files.length + ":v=0:a=1");
 		command.add("\"" + outputMP3.getPath() + "\"");
 
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 
-		Process process = null;
+		if (this.instance.getConfig().getBoolean("PrintFFMpegLog")) {
+			System.out.println("コマンド: " + rawCommand);
+			System.out.println("コマンド: " + command.toString());
+		}
+
+		String uniqueId = UUID.randomUUID().toString().split("-")[0];
+
+		File batFile = new File(uniqueId + ".bat");
+		if (!batFile.exists()) {
+			try {
+				batFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		FileWriter fileWriter = null;
+		try {
+			fileWriter = new FileWriter(uniqueId + ".bat");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		PrintWriter printWriter = new PrintWriter(new BufferedWriter(fileWriter));
+		printWriter.println("@echo off");
+		printWriter.println(rawCommand);
+		printWriter.println("pause");
+		printWriter.close();
+
+		String runtime = "cmd.exe /c start " + uniqueId + ".bat";
+		try {
+			Runtime.getRuntime().exec(runtime);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// batFile.delete();
+
+		/* Process process = null;
 		try {
 			process = processBuilder.start();
-			process.waitFor();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		/* System.out.println("Command: " + command.toString());
+		if (this.instance.getConfig().getBoolean("PrintFFMpegLog")) {
+			Scanner scanner;
 
-		Scanner scanner;
-
-		scanner = new Scanner(process.getInputStream());
-		while (scanner.hasNext()) {
-			System.out.println("ffmpeg: " + scanner.nextLine());
-		}
-		scanner.close();
-		scanner = new Scanner(process.getErrorStream());
-		while (scanner.hasNext()) {
-			System.err.println("ffmpeg: " + scanner.nextLine());
-		}
-		scanner.close();
-
-		System.out.println("!"); */
+			scanner = new Scanner(process.getInputStream());
+			while (scanner.hasNext()) {
+				System.out.println("[FFMPEG] " + scanner.nextLine());
+			}
+			scanner.close();
+			scanner = new Scanner(process.getErrorStream());
+			while (scanner.hasNext()) {
+				System.out.println("[FFMPEG] " + scanner.nextLine());
+			}
+			scanner.close();
+		} */
 	}
 
 	public void convertToMP3(File old, File _new, boolean removeFile) {

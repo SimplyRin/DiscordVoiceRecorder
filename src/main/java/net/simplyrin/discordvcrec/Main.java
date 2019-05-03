@@ -72,6 +72,7 @@ public class Main {
 
 			Configuration config = Config.getConfig(file);
 			config.set("Token", "BOT_TOKEN_HERE");
+			config.set("PrintFFMpegLog", true);
 
 			Config.saveConfig(config, file);
 		}
@@ -106,15 +107,7 @@ public class Main {
 
 		System.out.println("読み込み完了！");
 
-		if (!this.isFFMpegExists()) {
-			System.out.println("ffmpeg.exe が見つかりませんでした。同じ実行ディレクトリに ffmpeg.exe をダウンロードして配置してください。");
-			System.out.println("ffmpeg.exe ダウンロード: http://ffmpeg.org/download.html");
-			System.exit(0);
-		}
-	}
-
-	public boolean isFFMpegExists() {
-		return new File("ffmpeg.exe").exists();
+		System.out.println("ffmpeg.exe ダウンロード: http://ffmpeg.org/download.html");
 	}
 
 	public String getTimeStamp() {

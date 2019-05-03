@@ -110,6 +110,9 @@ public class MessageListener extends ListenerAdapter {
 				MultiProcess multiProcess = new MultiProcess();
 				multiProcess.addProcess(() -> recordHandler.saveAndQuit());
 				multiProcess.setFinishedTask(() -> {
+					embedBuilder.clear();
+					embedBuilder.setColor(Color.GREEN);
+					embedBuilder.setDescription("ファイルの処理が終了しました。");
 					channel.sendMessage(embedBuilder.build()).complete();
 				});
 				multiProcess.start();

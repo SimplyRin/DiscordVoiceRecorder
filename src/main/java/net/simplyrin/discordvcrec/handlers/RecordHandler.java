@@ -1,8 +1,19 @@
 package net.simplyrin.discordvcrec.handlers;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+
+import org.apache.commons.lang.ArrayUtils;
 
 import lombok.Getter;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
@@ -11,6 +22,7 @@ import net.dv8tion.jda.api.audio.CombinedAudio;
 import net.dv8tion.jda.api.audio.UserAudio;
 import net.dv8tion.jda.api.entities.Guild;
 import net.simplyrin.discordvcrec.Main;
+import net.simplyrin.discordvcrec.utils.ThreadPool;
 
 /**
  * Created by SimplyRin on 2019/04/29.
@@ -48,9 +60,19 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 	@Getter
 	private byte[] lastBytes;
 
+	@Getter
+	private String cacheId;
+	@Getter
+	private File cacheFolder;
+	private int cacheCount = 0;
+
 	public RecordHandler(Main instance, Guild guild) {
 		this.instance = instance;
 		this.guild = guild;
+
+		this.cacheId = UUID.randomUUID().toString().split("-")[0];
+		this.cacheFolder = new File(this.instance.getCacheFolder(), this.cacheId);
+		this.cacheFolder.mkdirs();
 	}
 
 	public boolean canReceiveCombined() {
@@ -67,8 +89,133 @@ public class RecordHandler implements AudioReceiveHandler, AudioSendHandler {
 		for (byte _byte : bytes) {
 			this.bytes.add(_byte);
 		}
+
+		// 1 min
+		// 3840 (20ms) * 50 (= 1s) * 60 (= 1m) => 11520000
+		if (this.bytes.size() >= 11520000) {
+			List<Byte> copiped = new ArrayList<>();
+			copiped.addAll(this.bytes);
+
+			this.bytes.clear();
+
+			ThreadPool.run(() -> {
+				try {
+					File file = new File(this.cacheFolder, this.cacheCount + ".wav");
+					File mp3 = new File(this.cacheFolder, this.cacheCount + ".mp3");
+
+					System.out.println("サーバー: " + this.guild.getName() + " (" + this.guild.getId() + "), ファイル: " + file.getPath());
+
+					this.cacheCount++;
+
+					byte[] _bytes = ArrayUtils.toPrimitive(copiped.toArray(new Byte[copiped.size()]));
+
+					ByteArrayInputStream inputStream = new ByteArrayInputStream(_bytes);
+
+					AudioFormat audioFormat = new AudioFormat(48000F, 16, 2, true, true);
+					AudioInputStream audioInputStream = new AudioInputStream(inputStream, audioFormat, _bytes.length);
+
+					AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, file);
+
+					this.convertToMP3(file, mp3, true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+		}
+
 		if (this.canProvide()) {
 			this.lastBytes = bytes;
+		}
+	}
+
+	public void saveAndQuit() {
+		{
+			File file = new File(this.cacheFolder, this.cacheCount + ".wav");
+			File mp3 = new File(this.cacheFolder, this.cacheCount + ".mp3");
+
+			byte[] _bytes = ArrayUtils.toPrimitive(this.bytes.toArray(new Byte[this.bytes.size()]));
+
+			ByteArrayInputStream inputStream = new ByteArrayInputStream(_bytes);
+
+			AudioFormat audioFormat = new AudioFormat(48000F, 16, 2, true, true);
+			AudioInputStream audioInputStream = new AudioInputStream(inputStream, audioFormat, _bytes.length);
+
+			try {
+				AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println("サーバー: " + this.guild.getName() + " (" + this.guild.getId() + "), ファイル: " + file.getPath());
+
+			this.convertToMP3(file, mp3, true);
+		}
+
+		File cacheFolder = this.cacheFolder;
+		File[] files = cacheFolder.listFiles();
+
+		// System.out.println("Files: " + Arrays.asList(files).toString());
+
+		List<String> command = new ArrayList<>();
+		command.add("ffmpeg");
+
+		for (File file : files) {
+			command.add("-i");
+			command.add("\"" + file.getPath() + "\"");
+		}
+
+		File guildFolder = new File(this.instance.getRecordFolder(), this.guild.getId());
+		guildFolder.mkdir();
+
+		String timeStamp = this.instance.getTimeStamp();
+		File outputMP3 = new File(guildFolder, timeStamp + ".mp3");
+
+		command.add("-filter_complex");
+		command.add("\"concat=n=" + files.length + ":v=0:a=1\"");
+		command.add("\"" + outputMP3.getPath() + "\"");
+
+		ProcessBuilder processBuilder = new ProcessBuilder(command);
+
+		Process process = null;
+		try {
+			process = processBuilder.start();
+			process.waitFor();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		/* System.out.println("Command: " + command.toString());
+
+		Scanner scanner;
+
+		scanner = new Scanner(process.getInputStream());
+		while (scanner.hasNext()) {
+			System.out.println("ffmpeg: " + scanner.nextLine());
+		}
+		scanner.close();
+		scanner = new Scanner(process.getErrorStream());
+		while (scanner.hasNext()) {
+			System.err.println("ffmpeg: " + scanner.nextLine());
+		}
+		scanner.close();
+
+		System.out.println("!"); */
+	}
+
+	public void convertToMP3(File old, File _new, boolean removeFile) {
+		ProcessBuilder processBuilder = new ProcessBuilder("ffmpeg.exe",
+				"-i",
+				"\"" + old.getPath() + "\"",
+				"\"" + _new.getPath() + "\"");
+
+		try {
+			Process process = processBuilder.start();
+			process.waitFor();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		if (removeFile) {
+			old.delete();
 		}
 	}
 

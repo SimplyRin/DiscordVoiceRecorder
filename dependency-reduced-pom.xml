@@ -4,9 +4,15 @@
   <groupId>net.simplyrin.discordvcrec</groupId>
   <artifactId>DiscordVoiceRecorder</artifactId>
   <name>DiscordVoiceRecorder</name>
-  <version>1.1</version>
+  <version>1.2</version>
   <url>http://maven.apache.org</url>
   <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -47,6 +53,11 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>net.simplyrin.discordvcrec.Main</mainClass>
+            </manifest>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

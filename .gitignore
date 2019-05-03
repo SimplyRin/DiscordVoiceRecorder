@@ -24,5 +24,8 @@ gradle
 libs
 target
 config.yml
-records
 *.exe
+
+# folders
+caches
+records

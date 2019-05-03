@@ -51,6 +51,8 @@ public class Main {
 
 	@Getter
 	private File recordFolder;
+	@Getter
+	private File cacheFolder;
 
 	@Getter
 	private TimeManager timeManager;
@@ -76,6 +78,10 @@ public class Main {
 
 		this.recordFolder = new File("records");
 		this.recordFolder.mkdir();
+
+		this.cacheFolder = new File("caches");
+		this.removeFolder(this.cacheFolder);
+		this.cacheFolder.mkdir();
 
 		this.timeManager = new TimeManager(this);
 
@@ -103,6 +109,7 @@ public class Main {
 		if (!this.isFFMpegExists()) {
 			System.out.println("ffmpeg.exe が見つかりませんでした。同じ実行ディレクトリに ffmpeg.exe をダウンロードして配置してください。");
 			System.out.println("ffmpeg.exe ダウンロード: http://ffmpeg.org/download.html");
+			System.exit(0);
 		}
 	}
 
@@ -113,6 +120,22 @@ public class Main {
 	public String getTimeStamp() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
 		return sdf.format(new Date());
+	}
+
+	/**
+	 * Code from ns777.
+	 * URL: https://qiita.com/ns777/items/0e959a9c35753b178003
+	 */
+	private void removeFolder(File file) {
+		if (!file.exists()) {
+			return;
+		}
+		if (file.isDirectory()) {
+			for (File child : file.listFiles()) {
+				this.removeFolder(child);
+			}
+		}
+		file.delete();
 	}
 
 }

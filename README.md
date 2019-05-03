@@ -7,6 +7,7 @@ Discord での通話内容を録音し、 `mp3` ファイルにて保存する D
 
 # Dependency
 - ffmpeg.exe - [Download](http://ffmpeg.org/download.html)
+  - Jar ファイルの実行している同じディレクトリまたはシステム環境変数に `ffmpeg.exe` のパスを通してください。
 
 # Commands
 | Command | Description |

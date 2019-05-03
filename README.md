@@ -17,3 +17,5 @@ Discord での通話を `mp3` ファイルに録音する `Bot`
 # Download
 - [DiscordVoiceRecorder-1.2.jar
 ](https://github.com/SimplyRin/DiscordVoiceRecorder/releases/download/1.1/DiscordVoiceRecorder-1.2.jar)
+
+- **※ 通話内容の録音に対して、なにか責任があった場合でも、開発者は一切責任を負いません。**

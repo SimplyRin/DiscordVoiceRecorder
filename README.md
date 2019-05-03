@@ -1,9 +1,12 @@
 # Discord Voice Recorder
-Discord での通話を `wav` ファイルに録音する `Bot`
+Discord での通話を `mp3` ファイルに録音する `Bot`
 
-録音ファイルは `records/serverId/yyyy-MM-dd HH-mm-ss.wav` 形式で保存されます。
+録音ファイルは `records/serverId/yyyy-MM-dd HH-mm-ss.mp3` 形式で保存されます。
 
-Jar ファイルの実行している同じディレクトリに `ffmpeg.exe` を置くと、自動的に `wav` ファイルを `mp3` に変換してくれます。
+この Bot を使用するには、最小で、 `50MB` ほどのメモリを割り当てる必要があります。
+
+# Dependency
+- ffmpeg.exe - [Download](http://ffmpeg.org/download.html)
 
 # Commands
 | Command | Description |
@@ -12,5 +15,5 @@ Jar ファイルの実行している同じディレクトリに `ffmpeg.exe` �
 | !quit | 録音停止 |
 
 # Download
-- [DiscordVoiceRecorder-1.1-jar-with-dependencies.jar
-](https://github.com/SimplyRin/DiscordVoiceRecorder/releases/download/1.1/DiscordVoiceRecorder-1.1-jar-with-dependencies.jar)
+- [DiscordVoiceRecorder-1.2.jar
+](https://github.com/SimplyRin/DiscordVoiceRecorder/releases/download/1.1/DiscordVoiceRecorder-1.2.jar)
